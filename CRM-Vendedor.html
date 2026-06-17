@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="CRM Vendas"/>
+<title>CRM Vendedor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;color:#18181b;-webkit-font-smoothing:antialiased}
+body{overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
+#hdr{background:#fff;border-bottom:1px solid #e4e4e7;padding:max(14px,env(safe-area-inset-top)) 16px 0;flex-shrink:0}
+#hdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.h-title{font-size:17px;font-weight:700}
+.h-sub{font-size:12px;color:#a1a1aa}
+.h-sub .urg{color:#dc2626;font-weight:600}
+#add-btn{background:#2563eb;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+#tabs{display:flex}
+.tb{flex:1;background:none;border:none;padding:10px 4px 8px;font-size:13px;font-weight:500;color:#a1a1aa;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s;position:relative}
+.tb.on{color:#2563eb;border-bottom-color:#2563eb}
+.tb-badge{position:absolute;top:5px;right:8px;background:#dc2626;color:#fff;font-size:9px;border-radius:10px;padding:1px 5px;font-weight:700}
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.page{display:none}.page.on{display:block}
+.card{background:#fff;border:1px solid #e4e4e7;border-radius:14px;padding:14px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;color:#a1a1aa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{border-radius:14px;padding:14px;border:1px solid #e4e4e7;background:#fff}
+.kpi.red{background:#fef2f2;border-color:#fecaca}
+.kpi.amber{background:#fffbeb;border-color:#fde68a}
+.kpi.green{background:#ecfdf5;border-color:#a7f3d0}
+.kpi-label{font-size:11px;color:#a1a1aa;margin-bottom:4px}
+.kpi-value{font-size:26px;font-weight:800;line-height:1}
+.kpi.red .kpi-value{color:#dc2626}
+.kpi.amber .kpi-value{color:#d97706}
+.kpi.green .kpi-value{font-size:18px;color:#059669}
+.kpi-sub{font-size:11px;color:#a1a1aa;margin-top:3px}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:80px;margin-top:8px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bar{width:100%;background:#2563eb;border-radius:4px 4px 0 0;min-height:3px}
+.bar-lbl{font-size:10px;color:#a1a1aa}
+.bar-val{font-size:10px;color:#3f3f46;font-weight:600;min-height:14px}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0}
+.row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f4f4f5;cursor:pointer}
+.row:last-child{border-bottom:none}
+.row-name{font-size:14px;font-weight:600;color:#18181b}
+.row-sub{font-size:12px;color:#a1a1aa;margin-top:1px}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge.red{background:#fee2e2;color:#b91c1c}
+.badge.amber{background:#fef3c7;color:#92400e}
+.badge.green{background:#d1fae5;color:#065f46}
+.badge.blue{background:#dbeafe;color:#1e40af}
+.badge.purple{background:#ede9fe;color:#5b21b6}
+.badge.gray{background:#f4f4f5;color:#52525b}
+.agenda-item{display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:14px;margin-bottom:8px;cursor:pointer;border:1px solid #e4e4e7;background:#fff}
+.agenda-item.urgent{background:#fef2f2;border-color:#fecaca}
+.agenda-item.attn{background:#fffbeb;border-color:#fde68a}
+.sec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.sec-label.red{color:#dc2626}
+.sec-label.amber{color:#d97706}
+.client-card{background:#fff;border:1px solid #e4e4e7;border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot.red{background:#dc2626}
+.dot.amber{background:#d97706}
+input[type=search],#search{width:100%;border:1px solid #e4e4e7;border-radius:10px;padding:11px 14px;font-size:15px;margin-bottom:12px;outline:none;background:#fff;-webkit-appearance:none}
+input[type=search]:focus,#search:focus{border-color:#2563eb}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px max(32px,env(safe-area-inset-bottom))}
+.modal-handle{width:36px;height:4px;background:#e4e4e7;border-radius:2px;margin:0 auto 14px}
+.modal h2{font-size:18px;font-weight:700;color:#18181b;margin-bottom:14px}
+.modal-close{float:right;background:#f4f4f5;border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;color:#71717a;line-height:30px;text-align:center}
+label.lbl{font-size:12px;font-weight:600;color:#71717a;margin-bottom:4px;display:block}
+.inp{width:100%;border:1px solid #e4e4e7;border-radius:10px;padding:11px 12px;font-size:15px;outline:none;margin-bottom:12px;background:#fff;color:#18181b;-webkit-appearance:none;box-sizing:border-box}
+.inp:focus{border-color:#2563eb}
+textarea.inp{resize:none;font-family:inherit;height:72px}
+.inp-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip-grp{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{border:1.5px solid #e4e4e7;background:#fff;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;color:#52525b;transition:all .15s}
+.chip.on{background:#2563eb;border-color:#2563eb;color:#fff}
+.chip.on-green{background:#059669;border-color:#059669;color:#fff}
+.btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;border:none;cursor:pointer}
+.btn.primary{background:#2563eb;color:#fff}
+.btn.secondary{background:#f4f4f5;color:#3f3f46}
+.btn.danger{background:#fee2e2;color:#dc2626}
+.btn.purple{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{background:#fafafa;border-radius:10px;padding:10px}
+.stat-lbl{font-size:11px;color:#a1a1aa;margin-bottom:2px}
+.stat-val{font-size:15px;font-weight:700;color:#18181b}
+.stat-val.green{color:#059669}
+.alert-box{border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.alert-box.red{background:#fef2f2}
+.alert-box.amber{background:#fffbeb}
+.alert-box.purple{background:#f5f3ff}
+.alert-txt{font-size:13px;font-weight:600}
+.alert-txt.red{color:#b91c1c}
+.alert-txt.amber{color:#92400e}
+.alert-txt.purple{color:#5b21b6}
+.hist-item{background:#fafafa;border-radius:10px;padding:10px;margin-bottom:6px}
+.hist-head{display:flex;justify-content:space-between;margin-bottom:3px}
+.ai-box{background:linear-gradient(135deg,#f5f3ff,#eff6ff);border:1px solid #ddd6fe;border-radius:14px;padding:14px;margin-bottom:14px}
+.ai-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai-icon{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #c4b5fd;border-top-color:#7c3aed;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress{height:8px;background:#f4f4f5;border-radius:4px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;background:#059669;border-radius:4px}
+.empty{text-align:center;padding:60px 20px;color:#a1a1aa}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:17px;font-weight:600;color:#52525b;margin-bottom:6px}
+#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#18181b;color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hdr">
+    <div id="hdr-row">
+      <div><div class="h-title">CRM Vendedor</div><div class="h-sub" id="h-sub">0 clientes</div></div>
+      <button id="add-btn" onclick="openForm()">+ Cliente</button>
+    </div>
+    <div id="tabs">
+      <button class="tb on" onclick="goTab('dashboard',this)">Inicio</button>
+      <button class="tb" onclick="goTab('agenda',this)" id="tab-agenda">Agenda</button>
+      <button class="tb" onclick="goTab('clients',this)">Clientes</button>
+    </div>
+  </div>
+  <div id="content">
+    <div id="page-dashboard" class="page on"></div>
+    <div id="page-agenda" class="page"></div>
+    <div id="page-clients" class="page"></div>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="ov" style="display:none" onclick="closeModal(event)"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const KEY = 'crm_vendedor_v2';
+let DB = [];
+
+function dbLoad() {
+  try { DB = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { DB = []; }
+}
+function dbSave() {
+  try { localStorage.setItem(KEY, JSON.stringify(DB)); return true; } catch(e) { alert('Erro ao salvar: ' + e.message); return false; }
+}
+function uid() { return Date.now() + Math.random().toString(36).slice(2); }
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const today = () => new Date().toISOString().split('T')[0];
+function fmt(d) { if (!d) return '—'; const [y,m,day] = d.split('-'); return day+'/'+m+'/'+y; }
+function ddiff(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function duntil(d) { return ddiff(today(), d); }
+function dsince(d) { return ddiff(d, today()); }
+function cur(v) { return 'R$ ' + parseFloat(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2}); }
+
+const AV_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899','#f97316'];
+function avColor(n) { return AV_COLORS[(n||'').charCodeAt(0) % AV_COLORS.length]; }
+function avInit(n) { return (n||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function avHTML(n, sz) {
+  sz = sz || 38;
+  return '<div class="avatar" style="width:'+sz+'px;height:'+sz+'px;background:'+avColor(n)+';font-size:'+(sz*.35).toFixed(0)+'px">'+avInit(n)+'</div>';
+}
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+const CHANNELS = ['WhatsApp','Ligacao','E-mail','Visita','Instagram'];
+const TAGS = ['Camiseta','Calca','Bermuda','Jaqueta','Tenis','Acessorio','Outro'];
+const REASONS = ['Aniversario chegando','Produto novo','Promocao especial','Faz tempo sem aparecer','Follow-up de compra','Pos-venda'];
+
+function alerts(c) {
+  const a = [];
+  if (c.birthday) {
+    const [,m,d] = c.birthday.split('-');
+    const yr = new Date().getFullYear();
+    const df = duntil(yr+'-'+m+'-'+d);
+    if (df >= 0 && df <= 7) a.push({lbl:'Aniversario '+(df===0?'hoje':'em '+df+'d'), p:1});
+    else { const df2 = duntil((yr+1)+'-'+m+'-'+d); if (df2<=7) a.push({lbl:'Aniversario em '+df2+'d', p:1}); }
+  }
+  if (c.lastContact) { const ds = dsince(c.lastContact); if (ds>=60) a.push({lbl:'Sem contato ha '+ds+'d', p:ds>=90?1:2}); }
+  else a.push({lbl:'Nunca contactado', p:1});
+  if (c.followUpDate) {
+    const df = duntil(c.followUpDate);
+    if (df<=0) a.push({lbl:'Follow-up atrasado', p:1});
+    else if (df<=3) a.push({lbl:'Follow-up em '+df+'d', p:2});
+  }
+  return a;
+}
+function topP(c) { const a=alerts(c); return a.length ? Math.min(...a.map(x=>x.p)) : 99; }
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+let curTab = 'dashboard';
+function goTab(tab, btn) {
+  curTab = tab;
+  document.querySelectorAll('.tb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById('page-'+tab).classList.add('on');
+  document.getElementById('content').scrollTop = 0;
+  render(tab);
+}
+function render(tab) {
+  if (tab === 'dashboard') renderDash();
+  else if (tab === 'agenda') renderAgenda();
+  else renderClients();
+}
+function renderAll() {
+  updateHeader();
+  render(curTab);
+}
+
+// ── HEADER ────────────────────────────────────────────────────────────────────
+function updateHeader() {
+  const urg = DB.filter(c => alerts(c).some(a => a.p===1)).length;
+  const sub = document.getElementById('h-sub');
+  sub.innerHTML = DB.length + ' clientes' + (urg > 0 ? ' &bull; <span class="urg">'+urg+' urgente</span>' : (DB.length > 0 ? ' &bull; tudo em dia' : ''));
+  const ta = document.getElementById('tab-agenda');
+  ta.innerHTML = 'Agenda' + (urg > 0 ? '<span class="tb-badge">'+urg+'</span>' : '');
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDash() {
+  const el = document.getElementById('page-dashboard');
+  if (!DB.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🏬</div><div class="empty-title">Bem-vindo ao CRM</div><p style="font-size:14px;margin-bottom:20px">Cadastre seu primeiro cliente para comecar a acompanhar contatos, aniversarios e vendas.</p><button class="btn primary" style="max-width:240px;margin:0 auto" onclick="openForm()">+ Adicionar primeiro cliente</button></div>';
+    return;
+  }
+  const totalRev = DB.reduce((s,c) => s+parseFloat(c.totalSpent||0), 0);
+  const urg = DB.filter(c => alerts(c).some(a => a.p===1));
+  const attn = DB.filter(c => { const a=alerts(c); return a.length>0 && !a.some(x=>x.p===1); });
+  const c30 = DB.filter(c => c.lastContact && dsince(c.lastContact)<=30).length;
+
+  // Revenue chart
+  const revMap = {};
+  DB.forEach(c => (c.contacts||[]).forEach(ct => {
+    if (ct.spent && parseFloat(ct.spent)>0) { const k=(ct.date||'').slice(0,7); if(k) revMap[k]=(revMap[k]||0)+parseFloat(ct.spent); }
+  }));
+  const months = [];
+  for (let i=5; i>=0; i--) {
+    const d = new Date(); d.setMonth(d.getMonth()-i);
+    const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    months.push({lbl:d.toLocaleDateString('pt-BR',{month:'short'}), val:revMap[k]||0});
+  }
+  const maxRev = Math.max(...months.map(m=>m.val), 1);
+
+  const topC = [...DB].filter(c=>parseFloat(c.totalSpent||0)>0).sort((a,b)=>parseFloat(b.totalSpent)-parseFloat(a.totalSpent)).slice(0,5);
+  const inact = [...DB].filter(c=>c.lastContact&&dsince(c.lastContact)>=60).sort((a,b)=>dsince(b.lastContact)-dsince(a.lastContact)).slice(0,5);
+
+  const bdays = DB.filter(c => {
+    if (!c.birthday) return false;
+    const [,m,d] = c.birthday.split('-'); const yr = new Date().getFullYear();
+    if (duntil(yr+'-'+m+'-'+d)>=0 && duntil(yr+'-'+m+'-'+d)<=30) return true;
+    return duntil((yr+1)+'-'+m+'-'+d)<=30;
+  }).map(c => {
+    const [,m,d]=c.birthday.split('-'); const yr=new Date().getFullYear();
+    let df=duntil(yr+'-'+m+'-'+d); if(df<0) df=duntil((yr+1)+'-'+m+'-'+d);
+    return {...c,_df:df};
+  }).sort((a,b)=>a._df-b._df);
+
+  const tagMap = {}; DB.forEach(c=>(c.tags||[]).forEach(t=>{tagMap[t]=(tagMap[t]||0)+1;}));
+  const topT = Object.entries(tagMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxT = topT.length ? topT[0][1] : 1;
+
+  function rowHTML(c, right) {
+    return '<div class="row" onclick="openDetail(\''+c.id+'\')">'+avHTML(c.name)+'<div style="flex:1;min-width:0"><div class="row-name">'+esc(c.name)+'</div><div class="row-sub">'+esc(c.preferredChannel||'')+'</div></div>'+right+'</div>';
+  }
+
+  let html = '<div class="kpi-grid">'
+    +'<div class="kpi"><div class="kpi-label">Total Clientes</div><div class="kpi-value">'+DB.length+'</div><div class="kpi-sub">'+c30+' contactados este mes</div></div>'
+    +'<div class="kpi green"><div class="kpi-label">Receita Total</div><div class="kpi-value">'+cur(totalRev)+'</div><div class="kpi-sub">em vendas</div></div>'
+    +'<div class="kpi'+(urg.length?' red':'')+'"><div class="kpi-label">Urgentes</div><div class="kpi-value">'+urg.length+'</div><div class="kpi-sub">para contatar</div></div>'
+    +'<div class="kpi'+(attn.length?' amber':'')+'"><div class="kpi-label">Atencao</div><div class="kpi-value">'+attn.length+'</div><div class="kpi-sub">para acompanhar</div></div>'
+    +'</div>';
+
+  if (months.some(m=>m.val>0)) {
+    html += '<div class="card"><div class="card-title">Vendas — ultimos 6 meses</div><div class="bar-chart">';
+    months.forEach(m => {
+      const h = Math.max(3, Math.round((m.val/maxRev)*64));
+      html += '<div class="bar-col"><div class="bar-val">'+(m.val>0?'R$'+Math.round(m.val):'')+'</div><div class="bar" style="height:'+h+'px"></div><div class="bar-lbl">'+m.lbl+'</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (urg.length) {
+    html += '<div class="card"><div class="card-title" style="color:#dc2626">Acao urgente ('+urg.length+')</div>';
+    urg.slice(0,5).forEach(c => {
+      const al = alerts(c).filter(a=>a.p===1);
+      html += rowHTML(c, '<div class="badges">'+al.slice(0,1).map(a=>'<span class="badge red">'+esc(a.lbl)+'</span>').join('')+'</div>');
+    });
+    html += '</div>';
+  }
+
+  if (bdays.length) {
+    html += '<div class="card"><div class="card-title">Aniversarios proximos</div>';
+    bdays.forEach(c => { html += rowHTML(c, '<span class="badge purple">'+(c._df===0?'Hoje!':c._df+'d')+'</span>'); });
+    html += '</div>';
+  }
+
+  if (topC.length) {
+    html += '<div class="card"><div class="card-title">Melhores clientes</div>';
+    topC.forEach(c => { html += rowHTML(c, '<span style="font-size:14px;font-weight:700;color:#059669">'+cur(c.totalSpent)+'</span>'); });
+    html += '</div>';
+  }
+
+  if (inact.length) {
+    html += '<div class="card"><div class="card-title">Clientes esfriando</div>';
+    inact.forEach(c => { html += rowHTML(c, '<span class="badge red">'+dsince(c.lastContact)+'d</span>'); });
+    html += '</div>';
+  }
+
+  if (topT.length) {
+    html += '<div class="card"><div class="card-title">Interesses dos clientes</div>';
+    topT.forEach(([tag,cnt]) => {
+      html += '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:600;color:#3f3f46">'+esc(tag)+'</span><span style="color:#a1a1aa">'+cnt+'</span></div><div class="progress"><div class="progress-fill" style="width:'+Math.round((cnt/maxT)*100)+'%"></div></div></div>';
+    });
+    html += '</div>';
+  }
+
+  el.innerHTML = html + '<div style="height:10px"></div>';
+}
+
+// ── AGENDA ────────────────────────────────────────────────────────────────────
+function renderAgenda() {
+  const el = document.getElementById('page-agenda');
+  if (!DB.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Nenhum cliente cadastrado</div></div>'; return; }
+  const urg = DB.filter(c=>alerts(c).some(a=>a.p===1));
+  const attn = DB.filter(c=>{ const a=alerts(c); return a.length>0&&!a.some(x=>x.p===1); });
+  const dateStr = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  if (!urg.length && !attn.length) {
+    el.innerHTML = '<div style="font-size:13px;font-weight:600;color:#a1a1aa;margin-bottom:14px">Hoje, '+dateStr+'</div><div class="card" style="text-align:center;padding:30px 16px"><div style="font-size:36px;margin-bottom:8px">✅</div><div style="font-size:16px;font-weight:700;color:#059669">Tudo em dia!</div><div style="font-size:14px;color:#a1a1aa;margin-top:4px">Nenhuma acao urgente.</div></div>';
+    return;
+  }
+  function itemHTML(c, cls) {
+    const al = alerts(c);
+    return '<div class="agenda-item '+cls+'" onclick="openDetail(\''+c.id+'\')">'+avHTML(c.name)+'<div style="flex:1"><div style="font-size:14px;font-weight:600;color:#18181b">'+esc(c.name)+'</div><div style="font-size:12px;color:#a1a1aa">'+esc(c.preferredChannel||'')+(c.phone?' / '+esc(c.phone):'')+'</div><div class="badges">'+al.map(a=>'<span class="badge '+(a.p===1?'red':'amber')+'">'+esc(a.lbl)+'</span>').join('')+'</div></div></div>';
+  }
+  let html = '<div style="font-size:13px;font-weight:600;color:#a1a1aa;margin-bottom:14px">Hoje, '+dateStr+'</div>';
+  if (urg.length) { html += '<div class="sec-label red">Urgente ('+urg.length+')</div>'+urg.map(c=>itemHTML(c,'urgent')).join(''); }
+  if (attn.length) { html += '<div class="sec-label amber" style="margin-top:'+(urg.length?12:0)+'px">Atencao ('+attn.length+')</div>'+attn.map(c=>itemHTML(c,'attn')).join(''); }
+  el.innerHTML = html;
+}
+
+// ── CLIENTS ───────────────────────────────────────────────────────────────────
+function renderClients(q) {
+  q = q || '';
+  const el = document.getElementById('page-clients');
+  let list = [...DB];
+  if (q) { const ql=q.toLowerCase(); list=list.filter(c=>c.name.toLowerCase().includes(ql)||(c.phone||'').includes(q)||(c.tags||[]).some(t=>t.toLowerCase().includes(ql))); }
+  list.sort((a,b)=>topP(a)-topP(b));
+  let html = '<input id="search" placeholder="Buscar por nome ou telefone..." oninput="renderClients(this.value)" value="'+esc(q)+'">';
+  if (!list.length) { html += '<div style="text-align:center;padding:40px;color:#a1a1aa;font-size:14px">Nenhum cliente encontrado.</div>'; }
+  else {
+    list.forEach(c => {
+      const al=alerts(c); const tp=topP(c);
+      html += '<div class="client-card" onclick="openDetail(\''+c.id+'\')">'+avHTML(c.name)+'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px"><span class="row-name">'+esc(c.name)+'</span>'+(tp<=1?'<span class="dot red"></span>':tp===2?'<span class="dot amber"></span>':'')+'</div><div class="row-sub">'+esc(c.preferredChannel||'')+(c.phone?' / '+esc(c.phone):'')+'</div>'+(al.length?'<div class="badges">'+al.slice(0,2).map(a=>'<span class="badge '+(a.p===1?'red':'amber')+'">'+esc(a.lbl)+'</span>').join('')+'</div>':'')+'</div>'+(parseFloat(c.totalSpent||0)>0?'<div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:#a1a1aa">gasto</div><div style="font-size:14px;font-weight:700;color:#059669">'+cur(c.totalSpent)+'</div></div>':'')+'</div>';
+    });
+  }
+  el.innerHTML = html;
+}
+
+// ── MODAL ENGINE ──────────────────────────────────────────────────────────────
+function showModal(html) {
+  const ov = document.getElementById('ov');
+  ov.style.display = 'flex';
+  ov.innerHTML = '<div class="modal" onclick="event.stopPropagation()"><div class="modal-handle"></div>'+html+'</div>';
+  ov.querySelector('.modal').scrollTop = 0;
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('ov')) {
+    document.getElementById('ov').style.display = 'none';
+    document.getElementById('ov').innerHTML = '';
+  }
+}
+
+// ── DETAIL ────────────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const c = DB.find(x=>x.id===id); if(!c) return;
+  const al = alerts(c);
+  let html = '<button class="modal-close" onclick="closeModal()">x</button>';
+  html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">'+avHTML(c.name,50)+'<div><div style="font-size:20px;font-weight:700">'+esc(c.name)+'</div><div style="font-size:13px;color:#a1a1aa">'+esc(c.preferredChannel||'')+(c.phone?' / '+esc(c.phone):'')+'</div></div></div>';
+  al.forEach(a => { html += '<div class="alert-box '+(a.p===1?'red':'amber')+'"><div class="alert-txt '+(a.p===1?'red':'amber')+'">'+esc(a.lbl)+'</div></div>'; });
+  if (c.followUpDate) html += '<div class="alert-box purple"><div class="alert-txt purple">Follow-up: '+fmt(c.followUpDate)+(c.followUpReason?' / '+esc(c.followUpReason):'')+'</div></div>';
+  html += '<div class="stat-grid"><div class="stat-box"><div class="stat-lbl">Aniversario</div><div class="stat-val">'+fmt(c.birthday)+'</div></div><div class="stat-box"><div class="stat-lbl">Total gasto</div><div class="stat-val green">'+(c.totalSpent?cur(c.totalSpent):'—')+'</div></div><div class="stat-box"><div class="stat-lbl">Ultimo contato</div><div class="stat-val">'+fmt(c.lastContact)+'</div></div><div class="stat-box"><div class="stat-lbl">Ultima compra</div><div class="stat-val">'+fmt(c.lastPurchase)+'</div></div></div>';
+  if ((c.tags||[]).length) html += '<div class="badges" style="margin-bottom:12px">'+c.tags.map(t=>'<span class="badge green">'+esc(t)+'</span>').join('')+'</div>';
+  if (c.notes) html += '<div style="background:#fafafa;border-radius:10px;padding:10px 12px;font-size:13px;color:#71717a;font-style:italic;margin-bottom:12px">"'+esc(c.notes)+'"</div>';
+  if ((c.contacts||[]).length) {
+    html += '<div class="card-title">Historico ('+c.contacts.length+')</div><div style="max-height:180px;overflow-y:auto;margin-bottom:12px">';
+    [...c.contacts].reverse().forEach(ct => {
+      html += '<div class="hist-item"><div class="hist-head"><span style="font-size:13px;font-weight:600;color:#3f3f46">'+esc(ct.channel)+'</span><span style="font-size:12px;color:#a1a1aa">'+fmt(ct.date)+'</span></div>'+(ct.note?'<div style="font-size:13px;color:#52525b">'+esc(ct.note)+'</div>':'')+(ct.purchase?'<div style="font-size:12px;color:#059669;margin-top:2px">'+esc(ct.purchase)+(ct.spent?' / '+cur(ct.spent):'')+'</div>':'')+'</div>';
+    });
+    html += '</div>';
+  }
+  html += '<div class="btn-row"><button class="btn primary" onclick="openLog(\''+id+'\')">Registrar Contato</button><button class="btn purple" onclick="openAI(\''+id+'\')">Sugestao IA</button></div>';
+  html += '<div class="btn-row" style="margin-top:8px"><button class="btn secondary" onclick="openForm(\''+id+'\')">Editar</button><button class="btn danger" onclick="deleteClient(\''+id+'\')">Excluir</button></div>';
+  showModal(html);
+}
+
+// ── FORM ──────────────────────────────────────────────────────────────────────
+function openForm(id) {
+  const c = id ? DB.find(x=>x.id===id) : null;
+  const f = c || {name:'',phone:'',email:'',birthday:'',preferredChannel:'WhatsApp',tags:[],notes:'',totalSpent:'',lastPurchase:'',lastContact:''};
+  let html = '<button class="modal-close" onclick="closeModal()">x</button>';
+  html += '<h2>'+(c?'Editar Cliente':'Novo Cliente')+'</h2>';
+  html += '<label class="lbl">Nome completo *</label><input class="inp" id="f-name" value="'+esc(f.name)+'" placeholder="Joao da Silva">';
+  html += '<div class="inp-row"><div><label class="lbl">WhatsApp</label><input class="inp" id="f-phone" value="'+esc(f.phone||'')+'" placeholder="(11) 99999" type="tel"></div><div><label class="lbl">E-mail</label><input class="inp" id="f-email" value="'+esc(f.email||'')+'" placeholder="email@..." type="email"></div></div>';
+  html += '<label class="lbl">Data de nascimento</label><input class="inp" id="f-birthday" type="date" value="'+(f.birthday||'')+'">';
+  html += '<div class="inp-row"><div><label class="lbl">Ultima compra</label><input class="inp" id="f-lastPurchase" type="date" value="'+(f.lastPurchase||'')+'"></div><div><label class="lbl">Ultimo contato</label><input class="inp" id="f-lastContact" type="date" value="'+(f.lastContact||'')+'"></div></div>';
+  html += '<label class="lbl">Total gasto (R$)</label><input class="inp" id="f-totalSpent" type="number" inputmode="decimal" value="'+(f.totalSpent||'')+'" placeholder="0,00">';
+  html += '<label class="lbl">Canal preferido</label><div class="chip-grp" id="cg-ch">'+CHANNELS.map(ch=>'<div class="chip'+((f.preferredChannel||'WhatsApp')===ch?' on':'')+'" onclick="chSel(this,\'cg-ch\')">'+ch+'</div>').join('')+'</div>';
+  html += '<label class="lbl">Interesses</label><div class="chip-grp" id="cg-tags">'+TAGS.map(t=>'<div class="chip'+((f.tags||[]).includes(t)?' on-green':'')+'" onclick="tagToggle(this)">'+t+'</div>').join('')+'</div>';
+  html += '<label class="lbl">Observacoes</label><textarea class="inp" id="f-notes" placeholder="Ex: prefere slim fit, tam M...">'+esc(f.notes||'')+'</textarea>';
+  html += '<button class="btn primary" onclick="saveForm(\''+( id||'')+'\')">Salvar cliente</button>';
+  showModal(html);
+}
+
+function chSel(el, grpId) {
+  document.querySelectorAll('#'+grpId+' .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+function tagToggle(el) { el.classList.toggle('on-green'); }
+function getChip(grpId) { const el=document.querySelector('#'+grpId+' .chip.on'); return el?el.textContent.trim():''; }
+function getTags() { return Array.from(document.querySelectorAll('#cg-tags .chip.on-green')).map(e=>e.textContent.trim()); }
+
+function saveForm(id) {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Insira o nome do cliente.'); return; }
+  const data = {
+    name,
+    phone: document.getElementById('f-phone').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    birthday: document.getElementById('f-birthday').value,
+    lastPurchase: document.getElementById('f-lastPurchase').value,
+    lastContact: document.getElementById('f-lastContact').value,
+    totalSpent: document.getElementById('f-totalSpent').value,
+    preferredChannel: getChip('cg-ch') || 'WhatsApp',
+    tags: getTags(),
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+  if (id) { const i=DB.findIndex(c=>c.id===id); DB[i]={...DB[i],...data}; }
+  else { DB.push({...data, id:uid(), contacts:[]}); }
+  dbSave();
+  closeModal();
+  renderAll();
+  toast(id?'Cliente atualizado ✓':'Cliente adicionado ✓');
+}
+
+function deleteClient(id) {
+  if (!confirm('Excluir este cliente?')) return;
+  DB = DB.filter(c=>c.id!==id);
+  dbSave();
+  closeModal();
+  renderAll();
+  toast('Cliente excluido');
+}
+
+// ── LOG CONTACT ───────────────────────────────────────────────────────────────
+function openLog(id) {
+  const c = DB.find(x=>x.id===id); if(!c) return;
+  let html = '<button class="modal-close" onclick="closeModal()">x</button>';
+  html += '<h2>Registrar Contato</h2>';
+  html += '<div style="font-size:14px;color:#71717a;margin-bottom:12px">'+esc(c.name)+'</div>';
+  html += '<label class="lbl">Canal utilizado</label><div class="chip-grp" id="cg-lch">'+CHANNELS.map(ch=>'<div class="chip'+((c.preferredChannel||'WhatsApp')===ch?' on':'')+'" onclick="chSel(this,\'cg-lch\')">'+ch+'</div>').join('')+'</div>';
+  html += '<label class="lbl">O que aconteceu?</label><textarea class="inp" id="l-note" placeholder="Ex: Cliente veio na loja, experimentou calca slim..."></textarea>';
+  html += '<label class="lbl">Compra realizada? (opcional)</label><input class="inp" id="l-pur" placeholder="Ex: 2 camisetas slim fit">';
+  html += '<label class="lbl">Valor gasto (R$)</label><input class="inp" id="l-sp" type="number" inputmode="decimal" placeholder="0,00">';
+  html += '<label class="lbl">Agendar proximo contato</label><input class="inp" id="l-fu" type="date" min="'+today()+'" onchange="toggleFuReason(this.value)">';
+  html += '<div id="fu-reason" style="display:none"><label class="lbl">Motivo do follow-up</label><div class="chip-grp" id="cg-fr">'+REASONS.map(r=>'<div class="chip" onclick="chSel(this,\'cg-fr\')" style="font-size:12px">'+r+'</div>').join('')+'</div></div>';
+  html += '<div class="btn-row"><button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="saveLog(\''+id+'\')">Salvar</button></div>';
+  showModal(html);
+}
+
+function toggleFuReason(val) {
+  document.getElementById('fu-reason').style.display = val ? 'block' : 'none';
+}
+
+function saveLog(id) {
+  const i = DB.findIndex(c=>c.id===id); if(i<0) return;
+  const c = DB[i];
+  const ch = getChip('cg-lch') || c.preferredChannel;
+  const note = document.getElementById('l-note').value.trim();
+  const pur  = document.getElementById('l-pur').value.trim();
+  const sp   = document.getElementById('l-sp').value;
+  const fu   = document.getElementById('l-fu').value;
+  const fr   = getChip('cg-fr');
+  const entry = {date:today(), channel:ch, note, purchase:pur, spent:sp};
+  const contacts = [...(c.contacts||[]), entry];
+  const upd = {contacts, lastContact:today(), followUpDate:fu||c.followUpDate, followUpReason:fr||c.followUpReason};
+  if (sp) upd.totalSpent = (parseFloat(c.totalSpent||0)+parseFloat(sp)).toFixed(2);
+  if (pur) upd.lastPurchase = today();
+  DB[i] = {...c, ...upd};
+  dbSave();
+  closeModal();
+  renderAll();
+  toast('Contato registrado ✓');
+}
+
+// ── AI TIP ────────────────────────────────────────────────────────────────────
+function openAI(id) {
+  const c = DB.find(x=>x.id===id); if(!c) return;
+  let html = '<button class="modal-close" onclick="closeModal()">x</button>';
+  html += '<h2>Sugestao de Abordagem</h2>';
+  html += '<div style="font-size:14px;color:#71717a;margin-bottom:12px">'+esc(c.name)+'</div>';
+  html += '<div class="ai-box" id="ai-result"><div class="ai-head"><div class="ai-icon">✨</div><span style="font-size:14px;font-weight:700;color:#7c3aed">Analisando perfil...</span></div><div style="display:flex;align-items:center;gap:8px;color:#71717a;font-size:13px"><div class="spinner"></div> Gerando sugestao personalizada</div></div>';
+  html += '<button class="btn secondary" onclick="closeModal()">Fechar</button>';
+  showModal(html);
+
+  const prompt = 'Voce e um assistente de vendas especialista em fidelizacao de clientes de loja fisica de moda masculina no Brasil.\nPerfil do cliente:\n- Nome: '+c.name+'\n- Ultimo contato: '+(c.lastContact?fmt(c.lastContact)+' (ha '+dsince(c.lastContact)+'d)':'Nunca')+'\n- Total gasto: '+(c.totalSpent?'R$ '+c.totalSpent:'Desconhecido')+'\n- Canal preferido: '+(c.preferredChannel||'WhatsApp')+'\n- Interesses: '+((c.tags||[]).join(', ')||'Nao informado')+'\n- Aniversario: '+(c.birthday?fmt(c.birthday):'Nao informado')+'\n- Obs: '+(c.notes||'Nenhuma')+'\nDe UMA sugestao pratica e personalizada de como abordar esse cliente agora. Maximo 3 frases. Inclua uma mensagem pronta para enviar via '+(c.preferredChannel||'WhatsApp')+'.';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:350, messages:[{role:'user',content:prompt}]})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    const text = (d.content||[]).map(b=>b.text||'').join('') || 'Nao foi possivel gerar sugestao.';
+    const el = document.getElementById('ai-result');
+    if(el) el.innerHTML = '<div class="ai-head"><div class="ai-icon">✨</div><span style="font-size:14px;font-weight:700;color:#7c3aed">Sugestao personalizada</span></div><p style="font-size:14px;color:#3f3f46;line-height:1.65;white-space:pre-wrap;margin:0">'+esc(text)+'</p>';
+  })
+  .catch(()=>{
+    const el=document.getElementById('ai-result');
+    if(el) el.innerHTML='<p style="color:#dc2626;font-size:14px">Erro ao conectar. Verifique sua conexao com a internet.</p>';
+  });
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2300);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+dbLoad();
+renderAll();
+</script>
+</body>
+</html>
